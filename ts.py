@@ -85,7 +85,7 @@ class GetLatestIntegrationPackages(Print):
         self.all_integration_packages = []  # 所有集成包列表
         self.target_integration_packages = {}  # 筛选后的最新集成包列表, 格式为：{package: YYMMddhhmmss-SVN12345}
 
-    def distinct_integration_package(self, sheet_name="修改单导出表"):
+    def get_all_integration_package(self, sheet_name="修改单导出表"):
         target_sheet = self.workbook.sheet_by_name(sheet_name)
         nrows = target_sheet.nrows
         ncols = target_sheet.ncols
@@ -123,5 +123,5 @@ if __name__ == "__main__":
     # ts_data_deal.save_to_excel(book_name="需求汇总.xls", needs_common_data=False)
 
     integration = GetLatestIntegrationPackages(workbook="ModifyDetail865521882.xlsx")
-    integration.get_integration_packages(integration.distinct_integration_package())
+    integration.get_integration_packages(integration.get_all_integration_package())
     integration.print_kv_via_defined_word(data=integration.target_integration_packages)
