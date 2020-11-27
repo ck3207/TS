@@ -54,7 +54,7 @@ class TsDataDeal:
         return self.keyword_dict
 
 if __name__ == "__main__":
-    ts_data_deal = TsDataDeal("ModifyDetail-1848582381.xlsx", ["通用", "中邮", "万和", "太平洋"])
+    ts_data_deal = TsDataDeal("ModifyDetail2012255746.xlsx", ["通用", "中邮", "万和", "太平洋", "财达", "联储"])
     ts_data_deal.classify()
     # ts_data_deal.printf()
     ts_data_deal.combine_common_ts()
