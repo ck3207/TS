@@ -83,7 +83,7 @@ class GetLatestIntegrationPackages(Print):
     def __init__(self, workbook=""):
         self.workbook = xlrd.open_workbook(filename=workbook)
         self.all_integration_packages = []  # 所有集成包列表
-        self.target_integration_packages = {}  # 筛选后的最新集成包列表, 格式为：{package: YYMMddhhmmss-SVN12345}
+        self.target_integration_packages = {}  # 筛选后的最新集成包数据, 格式为：{package: YYMMddhhmmss-SVN12345}
 
     def get_all_integration_package(self, sheet_name="修改单导出表"):
         target_sheet = self.workbook.sheet_by_name(sheet_name)
@@ -97,20 +97,22 @@ class GetLatestIntegrationPackages(Print):
         return self.all_integration_packages
 
     def get_integration_packages(self, integration_packages_list=[]):
-        reg_packages = re.compile("[\w-]+\.zip")  # 匹配集成包版本路径
+        reg_packages = re.compile("[/\w-]+/[\w-]+\.zip")  # 匹配集成包版本路径
         # reg_package_split = re.compile("([\w-]+)-(\d+)-(SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,集成时间，SVN版本)
         reg_package_split = re.compile("([\w-]+)-(\d+-SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,版本)
         for integration_package in integration_packages_list:
             reg_packages_result = reg_packages.findall(integration_package)
             for package in reg_packages_result:
                 # package_name, integration_time, svn_version = reg_package_split.match(package).groups()
-                package_name, version = reg_package_split.match(package).groups()
-                # print(package_name, version)
+                package_name, version = reg_package_split.search(package).groups()
+                # 获取集成包路径前缀
+                prefix_package_path = package.replace(package_name+"-"+version+".zip", "")
                 # 若匹配的包不在目标数据中则添加，若存在与目标数据中，则比较两个版本哪个高，并保留版本高的数据
-                if not self.target_integration_packages.get(package_name):
-                    self.target_integration_packages.setdefault(package_name, version)
-                elif self.target_integration_packages.get(package_name) < version:
-                    self.target_integration_packages.update({package_name: version})
+                # self.prefix_package_path.setdefault(package_name, prefix_package_path)
+                if not self.target_integration_packages.get(prefix_package_path):
+                    self.target_integration_packages.setdefault(prefix_package_path, version)
+                elif self.target_integration_packages.get(prefix_package_path) < version:
+                    self.target_integration_packages.update({prefix_package_path: version})
 
         return self.target_integration_packages
 
