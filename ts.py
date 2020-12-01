@@ -1,4 +1,5 @@
 import re
+import sys
 
 import xlrd
 import xlwt
@@ -13,10 +14,10 @@ class Print:
             for k, v in data.items():
                 print(k, v)
 
-    def print_kv_via_defined_word(self, data, connected_word=["-", ".zip"]):
+    def print_kv_via_defined_word(self, data, connected_word="-"):
         if isinstance(data, dict):
             for k, v in data.items():
-                print(k + connected_word[0] + v + connected_word[1])
+                print(k + connected_word + v)
 
 class TsDataDeal:
     def __init__(self, workbook, keyword_list):
@@ -97,16 +98,20 @@ class GetLatestIntegrationPackages(Print):
         return self.all_integration_packages
 
     def get_integration_packages(self, integration_packages_list=[]):
-        reg_packages = re.compile("[/\w-]+/[\w-]+\.zip")  # 匹配集成包版本路径
+        reg_packages = re.compile("[\/\.\u4e00-\u9fa5\w\[\]-]+\.zip")  # 匹配集成包版本路径
         # reg_package_split = re.compile("([\w-]+)-(\d+)-(SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,集成时间，SVN版本)
-        reg_package_split = re.compile("([\w-]+)-(\d+-SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,版本)
+        # reg_package_split = re.compile("([\w-]+)-(\d+-SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,版本)
+        reg_package_split = re.compile("([\.\[\]\w-]+\.zip)")  # 匹配集成包路径各个部分(包名,版本)
         for integration_package in integration_packages_list:
             reg_packages_result = reg_packages.findall(integration_package)
             for package in reg_packages_result:
                 # package_name, integration_time, svn_version = reg_package_split.match(package).groups()
-                package_name, version = reg_package_split.search(package).groups()
+                # package_name, version = reg_package_split.search(package).groups()
+                package_path = reg_package_split.search(package).group(0)
                 # 获取集成包路径前缀
-                prefix_package_path = package.replace(package_name+"-"+version+".zip", "")
+                # prefix_package_path = package.replace(package_name+"-"+version+".zip", "")
+                prefix_package_path = package.replace(package_path, "")
+                version = package_path
                 # 若匹配的包不在目标数据中则添加，若存在与目标数据中，则比较两个版本哪个高，并保留版本高的数据
                 # self.prefix_package_path.setdefault(package_name, prefix_package_path)
                 if not self.target_integration_packages.get(prefix_package_path):
@@ -124,6 +129,10 @@ if __name__ == "__main__":
     # ts_data_deal.combine_common_ts()
     # ts_data_deal.save_to_excel(book_name="需求汇总.xls", needs_common_data=False)
 
-    integration = GetLatestIntegrationPackages(workbook="ModifyDetail865521882.xlsx")
+    try:
+        filename = sys.argv[1]
+    except:
+        filename = "ModifyDetail865521882.xlsx"
+    integration = GetLatestIntegrationPackages(workbook=filename)
     integration.get_integration_packages(integration.get_all_integration_package())
-    integration.print_kv_via_defined_word(data=integration.target_integration_packages)
+    integration.print_kv_via_defined_word(data=integration.target_integration_packages, connected_word="")
