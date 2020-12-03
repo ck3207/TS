@@ -17,6 +17,8 @@ class Print:
     def print_kv_via_defined_word(self, data, connected_word="-"):
         if isinstance(data, dict):
             for k, v in data.items():
+                if "docker" in k:
+                    k = "/".join(k.split("/")[:-1])
                 print(k + connected_word + v)
 
 class TsDataDeal:
@@ -98,26 +100,35 @@ class GetLatestIntegrationPackages(Print):
         return self.all_integration_packages
 
     def get_integration_packages(self, integration_packages_list=[]):
-        reg_packages = re.compile("[\/\.\u4e00-\u9fa5\w\[\]-]+\.zip")  # 匹配集成包版本路径
-        # reg_package_split = re.compile("([\w-]+)-(\d+)-(SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,集成时间，SVN版本)
-        # reg_package_split = re.compile("([\w-]+)-(\d+-SVN\d+)\.zip")  # 匹配集成包路径各个部分(包名,版本)
-        reg_package_split = re.compile("([\.\[\]\w-]+\.zip)")  # 匹配集成包路径各个部分(包名,版本)
+        reg_packages = re.compile("[\/\.:\u4e00-\u9fa5\w\[\]-]+\.zip")  # 匹配集成包版本路径
+        # reg_packages = re.compile("(\S+SVN\S{1,30})$")  # 匹配集成包版本路径
+        reg_packages_docker = re.compile("[\/\._:\u4e00-\u9fa5\w\[\]-]+SVN\S+$")  # 匹配集成包版本路径
         for integration_package in integration_packages_list:
-            reg_packages_result = reg_packages.findall(integration_package)
-            for package in reg_packages_result:
-                # package_name, integration_time, svn_version = reg_package_split.match(package).groups()
-                # package_name, version = reg_package_split.search(package).groups()
-                package_path = reg_package_split.search(package).group(0)
-                # 获取集成包路径前缀
-                # prefix_package_path = package.replace(package_name+"-"+version+".zip", "")
-                prefix_package_path = package.replace(package_path, "")
-                version = package_path
-                # 若匹配的包不在目标数据中则添加，若存在与目标数据中，则比较两个版本哪个高，并保留版本高的数据
-                # self.prefix_package_path.setdefault(package_name, prefix_package_path)
-                if not self.target_integration_packages.get(prefix_package_path):
-                    self.target_integration_packages.setdefault(prefix_package_path, version)
-                elif self.target_integration_packages.get(prefix_package_path) < version:
-                    self.target_integration_packages.update({prefix_package_path: version})
+            for integration_package in integration_package.split("\n"):
+                integration_package = integration_package.strip()
+                # 对于docker的集成包路径特殊化处理
+                if "docker" in integration_package:
+                    reg_packages = reg_packages_docker
+                reg_packages_result = reg_packages.findall(integration_package)
+                for package in reg_packages_result:
+                    # 集成包版本
+                    version = package.split("/")[-1]
+                    prefix_package_path = "/".join(package.split("/")[:-1])
+                    # 对于docker的集成包路径特殊化处理
+                    # artifactory.hundsun.com/xxx/smartwhale/smart:SVN15730-20201130152218
+                    # artifactory.hundsun.com/xxx/smartwhale/smart-data:SVN15730-20201130152409
+                    if "docker" in package:
+                        # 集成包路径前缀
+                        tmp_list = package.split("/")[:-1]
+                        tmp_list.append(version.split(":")[0])
+                        prefix_package_path = "/".join(tmp_list)
+
+                    # 若匹配的包不在目标数据中则添加，若存在与目标数据中，则比较两个版本哪个高，并保留版本高的数据
+                    # self.prefix_package_path.setdefault(package_name, prefix_package_path)
+                    if not self.target_integration_packages.get(prefix_package_path):
+                        self.target_integration_packages.setdefault(prefix_package_path, version)
+                    elif self.target_integration_packages.get(prefix_package_path) < version:
+                        self.target_integration_packages.update({prefix_package_path: version})
 
         return self.target_integration_packages
 
@@ -132,7 +143,7 @@ if __name__ == "__main__":
     try:
         filename = sys.argv[1]
     except:
-        filename = "ModifyDetail865521882.xlsx"
+        filename = "ModifyDetail-1051239513.xlsx"
     integration = GetLatestIntegrationPackages(workbook=filename)
     integration.get_integration_packages(integration.get_all_integration_package())
-    integration.print_kv_via_defined_word(data=integration.target_integration_packages, connected_word="")
+    integration.print_kv_via_defined_word(data=integration.target_integration_packages, connected_word="/")
