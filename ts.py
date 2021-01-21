@@ -61,7 +61,9 @@ class TsDataDeal:
             if needs_common_data == False and k == self.keyword_list[0]:
                 continue
             work_sheet = work_book.add_sheet(k)
-            i, j = 0, 0
+            work_sheet.write(0, 0, "修改单号")
+            work_sheet.write(0, 1, "修改原因")
+            i, j = 1, 0
             for each_ts in v_list:
                 for ts, info in each_ts.items():
                     # 表格第一行写ts修改单编号， 第二行写修改单说明
@@ -134,16 +136,16 @@ class GetLatestIntegrationPackages(Print):
 
 
 if __name__ == "__main__":
-    # ts_data_deal = TsDataDeal("ModifyDetail2012255746.xlsx", ["通用", "中邮", "万和", "太平洋", "财达", "联储"])
-    # ts_data_deal.classify()
-    # # ts_data_deal.printf()
-    # ts_data_deal.combine_common_ts()
-    # ts_data_deal.save_to_excel(book_name="需求汇总.xls", needs_common_data=False)
+    ts_data_deal = TsDataDeal("ModifyDetail919474646.xlsx", ["通用", "中邮", "万和", "太平洋", "财达", "联储", "华创"])
+    ts_data_deal.classify()
+    # ts_data_deal.printf()
+    ts_data_deal.combine_common_ts()
+    ts_data_deal.save_to_excel(book_name="需求汇总.xls", needs_common_data=False)
 
-    try:
-        filename = sys.argv[1]
-    except:
-        filename = "ModifyDetail-1051239513.xlsx"
-    integration = GetLatestIntegrationPackages(workbook=filename)
-    integration.get_integration_packages(integration.get_all_integration_package())
-    integration.print_kv_via_defined_word(data=integration.target_integration_packages, connected_word="/")
+    # try:
+    #     filename = sys.argv[1]
+    # except:
+    #     filename = "ModifyDetail-1920709361.xlsx"
+    # integration = GetLatestIntegrationPackages(workbook=filename)
+    # integration.get_integration_packages(integration.get_all_integration_package())
+    # integration.print_kv_via_defined_word(data=integration.target_integration_packages, connected_word="/")
