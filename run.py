@@ -38,13 +38,15 @@ login.quit()
 data = {"param": '{"modifyStatus":"0,1,2,3,4,5,6,7,8,9,11,12","versionNo":"%FSP1.0V202101.02.000%"}',
         "start": 0, "limit": 200, "isUserDataValidity": "Y", "page": 1}
 ts_data_list = request.fetch_ts_issues(data=data)
+ts_data_list_filter_html_label = request.filter_html_label(data=ts_data_list.get("resultBOList"))
 
 write_to_excel = WriteToExcel(filename="./static/ts导出表.xls", sheetname="ts_list")
 write_to_excel.write_via_row(data_list=["修改单单号", "修改理由", "集成说明"], startcol=0, startrow=0)
-write_to_excel.write_via_row(data_list=ts_data_list.get("resultBOList"),
+write_to_excel.write_via_row(data_list=ts_data_list_filter_html_label,
                              keyname=["modifyNum", "modifyReason", "integationDesc"], startcol=0, startrow=1)
 write_to_excel.close_file()
 logging.info("Have written ts data to ./static/ts导出表.xls")
+
 
 # 将缺陷数据写入excel文件
 # write_to_excel = WriteToExcel(filename="./static/bug_list.xls", sheetname="缺陷列表")

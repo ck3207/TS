@@ -1,6 +1,8 @@
 import requests
 import time
 
+from bs4 import BeautifulSoup
+
 from Jira.public import logging
 
 class Request:
@@ -107,6 +109,21 @@ class Request:
         full_data = self.get_se_configurations()
         full_data.update(data)
         return self.request(url=url, is_get_method=False, headers=self.headers, data=full_data)
+
+    def filter_html_label(self, data_list):
+        """去除列表数据元素中的html标签
+        <div>【任务类型】太平洋</div><div>【任务方案】</div 
+         -->
+        【任务类型】太平洋
+        【任务方案】
+        """
+        data_list_dealed = []
+        for data in data_list:
+            data_tmp = ""
+            for each in BeautifulSoup(data).string:
+                data_tmp += each + "\n"
+            data_list_dealed.append(data_tmp)
+        return data_list_dealed
 
     def get_jira_column_relation(self):
         """通过调用此接口，获取jira的字段关系信息(jira新增缺陷界面看到的字段与实际传入字段的名称对应关系)"""

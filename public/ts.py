@@ -148,6 +148,7 @@ class TsDataDeal:
 
 
 if __name__ == "__main__":
+    input("Hello, please input something: ")
     try:
         filename = sys.argv[1]
     except:
@@ -158,5 +159,9 @@ if __name__ == "__main__":
     ts_data_deal.combine_common_ts()
     ts_data_deal.save_to_excel(book_name="需求汇总.xls", needs_common_data=False)
 
-    ts_data_deal.get_integration_packages(ts_data_deal.get_all_integration_package())
-    Print.print_kv_via_defined_word(data=ts_data_deal.target_integration_packages, connected_word="/")
+    try:
+        ts_data_deal.get_integration_packages(ts_data_deal.get_all_integration_package())
+        Print.print_kv_via_defined_word(data=ts_data_deal.target_integration_packages, connected_word="/")
+    except Exception as e:
+        pass
+    print("Done!")
